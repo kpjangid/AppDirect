@@ -50,6 +50,8 @@ public class AppDirectSubscriptionManagementHandler extends AbstractHandler {
 						"received options", requestHeader);
 			}
 
+			String subContext = request.getPathInfo();
+
 			Gson gson = new Gson();
 
 			inputStream = request.getInputStream();
@@ -60,8 +62,10 @@ public class AppDirectSubscriptionManagementHandler extends AbstractHandler {
 
 			JSONObject json = new JSONObject();
 
-			switch (subcriber.getType()) {
-			case RequestParameters.SUBSCRIPTION_ORDER:
+			System.out.println("subcontext : " + subContext);
+
+			switch (subContext) {
+			case RequestParameters.CREATE:
 
 				subcriber.getPayload().getAccount()
 						.setAccountIdentifier(RuntimeConfigurationEngine.getInstance().getSub_id() + 1);
@@ -73,11 +77,11 @@ public class AppDirectSubscriptionManagementHandler extends AbstractHandler {
 				json.put("accountIdentifier", RuntimeConfigurationEngine.getInstance().getSub_id() + 1);
 
 				break;
-			case RequestParameters.SUBSCRIPTION_CHANGE:
+			case RequestParameters.CHANGE:
 				String accountIdentifier = subcriber.getPayload().getAccount().getAccountIdentifier();
 				UserSubscriberCacheDAO.getInstance().updateUSerSubscriber(accountIdentifier, subcriber);
 				break;
-			case RequestParameters.SUBSCRIPTION_CANCEL:
+			case RequestParameters.CANCEL:
 				String accountIdentifier1 = subcriber.getPayload().getAccount().getAccountIdentifier();
 				UserSubscriberCacheDAO.getInstance().removeUSerSubscriber(accountIdentifier1);
 				break;
