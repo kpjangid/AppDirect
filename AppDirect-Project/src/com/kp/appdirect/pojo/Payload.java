@@ -1,9 +1,12 @@
 package com.kp.appdirect.pojo;
 
 public class Payload {
+
 	private Order order;
 
 	private Company company;
+
+	private Account account;
 
 	public Order getOrder() {
 		return order;
@@ -23,6 +26,14 @@ public class Payload {
 
 	@Override
 	public String toString() {
-		return "ClassPojo [order = " + order + ", company = " + company + "]";
+		return "ClassPojo [order = " + order + ", company = " + company + ", account = " + account + "]";
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 }

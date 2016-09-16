@@ -6,9 +6,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.kp.appdirect.manage.AppDirectManagerBootstrap;
+import com.kp.appdirect.management.RuntimeConfigurationEngine;
+import com.kp.appdirect.pojo.Subscriber;
+import com.kp.appdirect.utility.UserSubscriberCacheDAO;
 
 /**
  * 
@@ -40,11 +50,56 @@ public class AppDirectSubscriptionManagementHandler extends AbstractHandler {
 						"received options", requestHeader);
 			}
 
-			String subContext = request.getPathInfo();
+			Gson gson = new Gson();
 
-			System.out.println("subcontext : " + subContext);
+			inputStream = request.getInputStream();
 
-			requestType = request.getMethod();
+			String sub = IOUtils.toString(inputStream);
+
+			Subscriber subcriber = gson.fromJson(sub, Subscriber.class);
+
+			JSONObject json = new JSONObject();
+
+			switch (subcriber.getType()) {
+			case RequestParameters.SUBSCRIPTION_ORDER:
+
+				subcriber.getPayload().getAccount()
+						.setAccountIdentifier(RuntimeConfigurationEngine.getInstance().getSub_id() + 1);
+				subcriber.getPayload().getAccount().setStatus("ACTIVE");
+
+				UserSubscriberCacheDAO.getInstance()
+						.addUserSubscriber(RuntimeConfigurationEngine.getInstance().getSub_id() + 1, subcriber);
+
+				json.put("accountIdentifier", RuntimeConfigurationEngine.getInstance().getSub_id() + 1);
+
+				break;
+			case RequestParameters.SUBSCRIPTION_CHANGE:
+				String accountIdentifier = subcriber.getPayload().getAccount().getAccountIdentifier();
+				UserSubscriberCacheDAO.getInstance().updateUSerSubscriber(accountIdentifier, subcriber);
+				break;
+			case RequestParameters.SUBSCRIPTION_CANCEL:
+				String accountIdentifier1 = subcriber.getPayload().getAccount().getAccountIdentifier();
+				UserSubscriberCacheDAO.getInstance().removeUSerSubscriber(accountIdentifier1);
+				break;
+			default:
+				break;
+			}
+
+			String eventUrl = request.getParameter("eventUrl");
+
+			HttpGet httpGet = new HttpGet(eventUrl);
+			CloseableHttpResponse httpResponse = AppDirectManagerBootstrap.smpManager.getHttpClient().execute(httpGet);
+
+			if (httpResponse.getStatusLine().getStatusCode() == HttpServletResponse.SC_OK) {
+				System.out.println("Notification Send Successful");
+			} else {
+				System.out.println("Notification Sending Failure");
+			}
+
+			json.put("success", true);
+
+			AppDirectCommonClass.getInstance().sendResponse(httpServletResponse, HttpServletResponse.SC_BAD_GATEWAY,
+					null, json, "Request Not Handled", requestHeader);
 
 		} catch (Exception e) {
 			AppDirectCommonClass.getInstance().sendResponse(httpServletResponse, HttpServletResponse.SC_BAD_GATEWAY,

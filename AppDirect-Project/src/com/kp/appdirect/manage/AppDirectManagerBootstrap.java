@@ -2,6 +2,9 @@ package com.kp.appdirect.manage;
 
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import com.kp.appdirect.management.RuntimeConfigurationEngine;
 
 /**
@@ -18,7 +21,7 @@ public class AppDirectManagerBootstrap {
 
 	private final ServerState serverState = new ServerState();
 
-	private org.apache.commons.httpclient.HttpClient httpClient = null;
+	private CloseableHttpClient httpClient = null;
 
 	public ServerState getServerState() {
 		return serverState;
@@ -44,7 +47,7 @@ public class AppDirectManagerBootstrap {
 
 		System.out.println("");
 		System.out.println("########################################################");
-		System.out.println("       rtClient_Download_Server has been started");
+		System.out.println("       Appp Direct Server has been started");
 		System.out.println("########################################################");
 		System.out.println("");
 
@@ -56,20 +59,31 @@ public class AppDirectManagerBootstrap {
 
 	}
 
+	/**
+	 * A method to initialize Apache HTTP Client for sending callback to client
+	 * through POST method.
+	 * 
+	 * @return void
+	 */
 	public void init_http_client() {
 
-		MultiThreadedHttpConnectionManager connection = new MultiThreadedHttpConnectionManager();
-		HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+		try {
+			MultiThreadedHttpConnectionManager connection = new MultiThreadedHttpConnectionManager();
+			HttpConnectionManagerParams params = new HttpConnectionManagerParams();
 
-		params.setConnectionTimeout(5000);
+			params.setConnectionTimeout(5000);
 
-		connection.setParams(params);
+			connection.setParams(params);
 
-		httpClient = new org.apache.commons.httpclient.HttpClient(connection);
+			httpClient = HttpClients.createDefault();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
-	public org.apache.commons.httpclient.HttpClient getHttpClient() {
+	public CloseableHttpClient getHttpClient() {
 		return this.httpClient;
 	}
 

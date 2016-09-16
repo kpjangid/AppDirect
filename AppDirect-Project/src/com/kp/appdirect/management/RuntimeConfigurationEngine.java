@@ -16,6 +16,8 @@ public class RuntimeConfigurationEngine {
 
 	private static final RuntimeConfigurationEngine runtimeEngine = new RuntimeConfigurationEngine();
 
+	private String sub_id;
+
 	// List of All the configuration parameter
 	private Properties systemSettings = new Properties();
 
@@ -82,6 +84,8 @@ public class RuntimeConfigurationEngine {
 				.setStringDescription(this.systemSettings.getProperty("ssl_keystore_password"));
 		EnumParameters.sslKeymanagerPassword
 				.setStringDescription(this.systemSettings.getProperty("ssl_manager_password"));
+		
+		setSub_id("Subcription_id_00");
 
 	}
 
@@ -93,6 +97,14 @@ public class RuntimeConfigurationEngine {
 					+ element.getFileName() + ":" + element.getLineNumber() + ")\n";
 
 		System.out.println(error);
+	}
+
+	public String getSub_id() {
+		return sub_id;
+	}
+
+	public void setSub_id(String sub_id) {
+		this.sub_id = sub_id;
 	}
 
 }
